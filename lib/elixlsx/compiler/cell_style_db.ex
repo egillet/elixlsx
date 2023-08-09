@@ -17,11 +17,11 @@ defmodule Elixlsx.Compiler.CellStyleDB do
   def register_style(cellstyledb, style) do
     case Map.fetch(cellstyledb.cellstyles, style) do
       :error ->
-        # add +1 here already since "0" refers to the default style
+        # add +2 here already since "0" refers to the default style and "1" to the default unlocked style
         csdb =
           update_in(
             cellstyledb.cellstyles,
-            &Map.put(&1, style, cellstyledb.element_count + 1)
+            &Map.put(&1, style, cellstyledb.element_count + 2)
           )
 
         update_in(csdb.element_count, &(&1 + 1))

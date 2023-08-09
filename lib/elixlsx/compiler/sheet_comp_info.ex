@@ -13,12 +13,12 @@ defmodule Elixlsx.Compiler.SheetCompInfo do
           sheetId: non_neg_integer
         }
 
-  @spec make(non_neg_integer, non_neg_integer) :: SheetCompInfo.t()
+  @spec make(non_neg_integer, non_neg_integer ) :: SheetCompInfo.t()
   def make(sheetidx, rId) do
     %SheetCompInfo{
       rId: "rId" <> to_string(rId),
       filename: "sheet" <> to_string(sheetidx) <> ".xml",
-      sheetId: sheetidx
+      sheetId: sheetidx,
     }
   end
 end

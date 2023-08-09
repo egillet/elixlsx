@@ -344,8 +344,8 @@ defmodule Elixlsx.XMLTemplates do
     """
   end
 
-  defp xl_sheet_protection(%Sheet{protected: true}) do
-    "<sheetProtection sheet=\"1\" objects=\"1\" scenarios=\"1\"/>"
+  defp xl_sheet_protection(%Sheet{protected: protected}) when is_boolean(protected) do
+    "<sheetProtection sheet=\"1\" objects=\"1\" scenarios=\"1\" formatCells=\"0\" formatColumns=\"0\" formatRows=\"0\"/>"
   end
 
   defp xl_sheet_protection(_), do: ""
@@ -434,6 +434,11 @@ defmodule Elixlsx.XMLTemplates do
   end
 
   defp make_cols(sheet) do
+    default_protected_col = case sheet do
+      %{protected: false} ->
+        "<col min=\"1\" max=\"16384\" width=\"10.83203125\" style=\"1\"/>"
+      _ -> ""
+    end
     grouping_info = get_grouping_info(sheet.group_cols)
 
     col_indices =
@@ -460,9 +465,13 @@ defmodule Elixlsx.XMLTemplates do
         )
         |> Enum.map_join(&make_col/1)
 
-      "<cols>#{cols}</cols>"
+      "<cols>#{default_protected_col}#{cols}</cols>"
     else
-      ""
+      if sheet.protected == false do
+        "<cols>#{default_protected_col}</cols>"
+      else
+        ""
+      end
     end
   end
 
@@ -642,7 +651,7 @@ defmodule Elixlsx.XMLTemplates do
               {"", ""}
 
             alignment ->
-              {"applyAlignment=\"1\"", alignment}
+              {" applyAlignment=\"1\"", alignment}
           end
       end
 
@@ -652,19 +661,10 @@ defmodule Elixlsx.XMLTemplates do
           {"", ""}
 
         protection ->
-          {"applyProtection=\"1\"", "<protection #{protection_attrs(protection)}/>"}
+          {" applyProtection=\"1\"", "<protection #{protection_attrs(protection)}/>"}
       end
 
-    """
-    <xf borderId="#{borderid}"
-           fillId="#{fillid}"
-           fontId="#{fontid}"
-           numFmtId="#{numfmtid}"
-           xfId="0" #{apply_alignment} #{apply_protection}>
-      #{wrap_text_tag}
-      #{protection_tag}
-    </xf>
-    """
+    "    <xf borderId=\"#{borderid}\" fillId=\"#{fillid}\" fontId=\"#{fontid}\" numFmtId=\"#{numfmtid}\" xfId=\"0\"#{apply_alignment}#{apply_protection}>#{wrap_text_tag}#{protection_tag}</xf>"
   end
 
   @spec wrap_text(String.t(), Font.t()) :: String.t()
@@ -718,8 +718,8 @@ defmodule Elixlsx.XMLTemplates do
   end
 
   @spec protection_attrs(Protection.t()) :: String.t()
-  defp protection_attrs(%Protection{locked: true}), do: "locked=\"1\" "
-  defp protection_attrs(%Protection{locked: false}), do: "locked=\"0\" "
+  defp protection_attrs(%Protection{locked: true}), do: "locked=\"1\""
+  defp protection_attrs(%Protection{locked: false}), do: "locked=\"0\""
   defp protection_attrs(_), do: ""
 
   # Returns the inner content of the <CellXfs> block.
@@ -783,8 +783,9 @@ defmodule Elixlsx.XMLTemplates do
           <alignment wrapText="1"/>
         </xf>
       </cellStyleXfs>
-      <cellXfs count="#{1 + length(cell_xfs)}">
+      <cellXfs count="#{2 + length(cell_xfs)}">
         <xf borderId="0" numFmtId="0" fillId="0" fontId="0" xfId="0"/>
+        <xf borderId="0" numFmtId="0" fillId="0" fontId="0" xfId="0" applyProtection="1"><protection locked="0"/></xf>
         #{make_cellxfs(cell_xfs, wci)}
       </cellXfs>
     </styleSheet>

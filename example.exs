@@ -1,4 +1,4 @@
-#! /usr/bin/elixir -pa _build/dev/lib/elixlsx/ebin/
+#! /usr/bin/env elixir -pa _build/dev/lib/elixlsx/ebin/
 
 require Elixlsx
 
@@ -149,14 +149,31 @@ sheet6 =
 # Here, A1 is editable while the sheet is protected, but B1 is not
 sheet7 =
   %Sheet{
-    name: "Protected",
+    name: "Protected default locked",
     protected: true
   }
-  |> Sheet.set_cell("A1", "Can be edited", locked: false)
-  |> Sheet.set_cell("B1", "Cannot be edited")
+  |> Sheet.set_cell("A1", "Cannot be edited using default")
+  |> Sheet.set_cell("A2", "Cannot be edited (explicit lock)", locked: true)
+  |> Sheet.set_cell("A3", "Can be edited (must be explicit)", locked: false)
+  |> Sheet.set_cell("A4", "All the other unspecified cells are locked")
+
+
+# Sheets can be protected. Cells are locked by default but can be set to be unlocked
+# Here, A1 is editable while the sheet is protected, but B1 is not
+sheet8 =
+  %Sheet{
+    name: "Protected default unlocked",
+    protected: false
+  }
+  |> Sheet.set_cell("A1", "Can be edited using default")
+  |> Sheet.set_cell("A2", "Can be edited (explicit unlock)", locked: false)
+  |> Sheet.set_cell("A3", "Cannot be edited (must be explicit)", locked: true)
+  |> Sheet.set_cell("A4", "All the other unspecified cells are unlocked")
+
 
 Workbook.append_sheet(workbook, sheet4)
 |> Workbook.append_sheet(sheet5)
 |> Workbook.append_sheet(sheet6)
 |> Workbook.append_sheet(sheet7)
+|> Workbook.append_sheet(sheet8)
 |> Elixlsx.write_to("example.xlsx")

@@ -30,7 +30,7 @@ defmodule Elixlsx.Sheet do
             pane_freeze: nil,
             show_grid_lines: true,
             data_validations: [],
-            protected: false
+            protected: nil
 
   @type t :: %Sheet{
           name: String.t(),
@@ -43,7 +43,7 @@ defmodule Elixlsx.Sheet do
           pane_freeze: {number, number} | nil,
           show_grid_lines: boolean(),
           data_validations: list({String.t(), String.t(), list(String.t()) | String.t()}),
-          protected: boolean()
+          protected: boolean() | nil
         }
   @type rowcol_group :: Range.t() | {Range.t(), opts :: keyword}
 
@@ -139,9 +139,10 @@ defmodule Elixlsx.Sheet do
         |> set_at(rowidx, colidx, content, opts)
 
       true ->
+        upd_opts = update_opts(sheet.protected, opts)
         update_in(sheet.rows, fn rows ->
           List.update_at(rows, rowidx, fn cols ->
-            List.replace_at(cols, colidx, [content | opts])
+            List.replace_at(cols, colidx, [content | upd_opts])
           end)
         end)
     end
@@ -228,4 +229,14 @@ defmodule Elixlsx.Sheet do
   def add_data_validations(sheet, start_cell, end_cell, values) do
     %{sheet | data_validations: [{start_cell, end_cell, values} | sheet.data_validations]}
   end
+  
+  
+  defp update_opts(nil, opts), do: Keyword.merge(opts, [locked: nil])
+  defp update_opts(protection, opts) do
+    case Keyword.fetch(opts, :locked) do
+      {:ok, _} -> opts
+      :error -> Keyword.put(opts, :locked, protection)
+    end
+  end
+
 end
