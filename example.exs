@@ -145,7 +145,18 @@ sheet6 =
   # nest further
   |> Sheet.group_cols("C", "D")
 
+# Sheets can be protected. Cells are locked by default but can be set to be unlocked
+# Here, A1 is editable while the sheet is protected, but B1 is not
+sheet7 =
+  %Sheet{
+    name: "Protected",
+    protected: true
+  }
+  |> Sheet.set_cell("A1", "Can be edited", locked: false)
+  |> Sheet.set_cell("B1", "Cannot be edited")
+
 Workbook.append_sheet(workbook, sheet4)
 |> Workbook.append_sheet(sheet5)
 |> Workbook.append_sheet(sheet6)
+|> Workbook.append_sheet(sheet7)
 |> Elixlsx.write_to("example.xlsx")

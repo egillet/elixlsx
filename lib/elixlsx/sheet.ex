@@ -29,7 +29,8 @@ defmodule Elixlsx.Sheet do
             merge_cells: [],
             pane_freeze: nil,
             show_grid_lines: true,
-            data_validations: []
+            data_validations: [],
+            protected: false
 
   @type t :: %Sheet{
           name: String.t(),
@@ -41,7 +42,8 @@ defmodule Elixlsx.Sheet do
           merge_cells: [{String.t(), String.t()}],
           pane_freeze: {number, number} | nil,
           show_grid_lines: boolean(),
-          data_validations: list({String.t(), String.t(), list(String.t()) | String.t()})
+          data_validations: list({String.t(), String.t(), list(String.t()) | String.t()}),
+          protected: boolean()
         }
   @type rowcol_group :: Range.t() | {Range.t(), opts :: keyword}
 
